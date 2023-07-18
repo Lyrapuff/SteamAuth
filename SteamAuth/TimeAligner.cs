@@ -15,6 +15,8 @@ namespace SteamAuth
         private static bool _aligned = false;
         private static int _timeDifference = 0;
 
+        public static IWebProxy Proxy;
+
         public static long GetSteamTime()
         {
             if (!TimeAligner._aligned)
@@ -41,6 +43,11 @@ namespace SteamAuth
                 client.Encoding = Encoding.UTF8;
                 try
                 {
+                    if (Proxy != null)
+                    {
+                        client.Proxy = Proxy;
+                    }
+                    
                     string response = client.UploadString(APIEndpoints.TWO_FACTOR_TIME_QUERY, "steamid=0");
                     TimeQuery query = JsonConvert.DeserializeObject<TimeQuery>(response);
                     TimeAligner._timeDifference = (int)(query.Response.ServerTime - currentTime);
@@ -59,6 +66,11 @@ namespace SteamAuth
             WebClient client = new WebClient();
             try
             {
+                if (Proxy != null)
+                {
+                    client.Proxy = Proxy;
+                }
+                
                 client.Encoding = Encoding.UTF8;
                 string response = await client.UploadStringTaskAsync(new Uri(APIEndpoints.TWO_FACTOR_TIME_QUERY), "steamid=0");
                 TimeQuery query = JsonConvert.DeserializeObject<TimeQuery>(response);

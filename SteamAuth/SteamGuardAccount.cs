@@ -51,6 +51,8 @@ namespace SteamAuth
         [JsonProperty("fully_enrolled")]
         public bool FullyEnrolled { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+        
         public SessionData Session { get; set; }
 
         private static byte[] steamGuardCodeTranslations = new byte[] { 50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89 };
@@ -66,7 +68,7 @@ namespace SteamAuth
             postBody.Add("revocation_code", this.RevocationCode);
             postBody.Add("revocation_reason", "1");
             postBody.Add("steamguard_scheme", scheme.ToString());
-            string response = await SteamWeb.POSTRequest("https://api.steampowered.com/ITwoFactorService/RemoveAuthenticator/v1?access_token=" + this.Session.AccessToken, null, postBody);
+            string response = await SteamWeb.POSTRequest("https://api.steampowered.com/ITwoFactorService/RemoveAuthenticator/v1?access_token=" + this.Session.AccessToken, null, postBody, Proxy);
 
             // Parse to object
             var removeResponse = JsonConvert.DeserializeObject<RemoveAuthenticatorResponse>(response);
@@ -129,14 +131,14 @@ namespace SteamAuth
         public Confirmation[] FetchConfirmations()
         {
             string url = this.GenerateConfirmationURL();
-            string response = SteamWeb.GETRequest(url, this.Session.GetCookies()).Result;
+            string response = SteamWeb.GETRequest(url, this.Session.GetCookies(), Proxy).Result;
             return FetchConfirmationInternal(response);
         }
 
         public async Task<Confirmation[]> FetchConfirmationsAsync()
         {
             string url = this.GenerateConfirmationURL();
-            string response = await SteamWeb.GETRequest(url, this.Session.GetCookies());
+            string response = await SteamWeb.GETRequest(url, this.Session.GetCookies(), Proxy);
             return FetchConfirmationInternal(response);
         }
 
@@ -200,7 +202,7 @@ namespace SteamAuth
             queryString += "&cid=" + conf.ID + "&ck=" + conf.Key;
             url += queryString;
 
-            string response = await SteamWeb.GETRequest(url, this.Session.GetCookies());
+            string response = await SteamWeb.GETRequest(url, this.Session.GetCookies(), Proxy);
             if (response == null) return false;
 
             SendConfirmationResponse confResponse = JsonConvert.DeserializeObject<SendConfirmationResponse>(response);
@@ -221,6 +223,7 @@ namespace SteamAuth
             string response;
             using (CookieAwareWebClient wc = new CookieAwareWebClient())
             {
+                wc.Proxy = Proxy;
                 wc.Encoding = Encoding.UTF8;
                 wc.CookieContainer = this.Session.GetCookies();
                 wc.Headers[HttpRequestHeader.UserAgent] = SteamWeb.MOBILE_APP_USER_AGENT;

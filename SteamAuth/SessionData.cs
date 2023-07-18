@@ -17,6 +17,8 @@ namespace SteamAuth
         public string RefreshToken { get; set; }
 
         public string SessionID { get; set; }
+        
+        public IWebProxy Proxy { get; set; }
 
         public async Task RefreshAccessToken()
         {
@@ -32,7 +34,7 @@ namespace SteamAuth
                 var postData = new NameValueCollection();
                 postData.Add("refresh_token", this.RefreshToken);
                 postData.Add("steamid", this.SteamID.ToString());
-                responseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IAuthenticationService/GenerateAccessTokenForApp/v1/", null, postData);
+                responseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IAuthenticationService/GenerateAccessTokenForApp/v1/", null, postData, Proxy);
             }
             catch (Exception ex)
             {

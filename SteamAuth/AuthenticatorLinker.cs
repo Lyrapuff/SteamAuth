@@ -12,6 +12,8 @@ namespace SteamAuth
     /// </summary>
     public class AuthenticatorLinker
     {
+        public IWebProxy Proxy { get; set; }
+        
         /// <summary>
         /// Session data containing an access token for a steam account generated with k_EAuthTokenPlatformType_MobileApp
         /// </summary>
@@ -90,7 +92,7 @@ namespace SteamAuth
             addAuthenticatorBody.Add("authenticator_type", "1");
             addAuthenticatorBody.Add("device_identifier", this.DeviceID);
             addAuthenticatorBody.Add("sms_phone_id", "1");
-            string addAuthenticatorResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/ITwoFactorService/AddAuthenticator/v1/?access_token=" + this.Session.AccessToken, null, addAuthenticatorBody);
+            string addAuthenticatorResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/ITwoFactorService/AddAuthenticator/v1/?access_token=" + this.Session.AccessToken, null, addAuthenticatorBody, Proxy);
 
             // Parse response json to object
             var addAuthenticatorResponse = JsonConvert.DeserializeObject<AddAuthenticatorResponse>(addAuthenticatorResponseStr);
@@ -211,7 +213,7 @@ namespace SteamAuth
         {
             NameValueCollection getCountryBody = new NameValueCollection();
             getCountryBody.Add("steamid", this.Session.SteamID.ToString());
-            string getCountryResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IUserAccountService/GetUserCountry/v1?access_token=" + this.Session.AccessToken, null, getCountryBody);
+            string getCountryResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IUserAccountService/GetUserCountry/v1?access_token=" + this.Session.AccessToken, null, getCountryBody, Proxy);
 
             // Parse response json to object
             GetUserCountryResponse response = JsonConvert.DeserializeObject<GetUserCountryResponse>(getCountryResponseStr);
@@ -223,13 +225,13 @@ namespace SteamAuth
             NameValueCollection setPhoneBody = new NameValueCollection();
             setPhoneBody.Add("phone_number", phoneNumber);
             setPhoneBody.Add("phone_country_code", countryCode);
-            string getCountryResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/SetAccountPhoneNumber/v1?access_token=" + this.Session.AccessToken, null, setPhoneBody);
+            string getCountryResponseStr = await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/SetAccountPhoneNumber/v1?access_token=" + this.Session.AccessToken, null, setPhoneBody, Proxy);
             return JsonConvert.DeserializeObject<SetAccountPhoneNumberResponse>(getCountryResponseStr);
         }
 
         private async Task<bool> _isAccountWaitingForEmailConfirmation()
         {
-            string waitingForEmailResponse = await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/IsAccountWaitingForEmailConfirmation/v1?access_token=" + this.Session.AccessToken, null, null);
+            string waitingForEmailResponse = await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/IsAccountWaitingForEmailConfirmation/v1?access_token=" + this.Session.AccessToken, null, null, Proxy);
 
             // Parse response json to object
             var response = JsonConvert.DeserializeObject<IsAccountWaitingForEmailConfirmationResponse>(waitingForEmailResponse);
@@ -238,7 +240,7 @@ namespace SteamAuth
 
         private async Task<bool> _sendPhoneVerificationCode()
         {
-            await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/SendPhoneVerificationCode/v1?access_token=" + this.Session.AccessToken, null, null);
+            await SteamWeb.POSTRequest("https://api.steampowered.com/IPhoneService/SendPhoneVerificationCode/v1?access_token=" + this.Session.AccessToken, null, null, Proxy);
             return true;
         }
 

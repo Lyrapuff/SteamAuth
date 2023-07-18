@@ -10,11 +10,12 @@ namespace SteamAuth
     {
         public static string MOBILE_APP_USER_AGENT = "okhttp/3.12.12";
 
-        public static async Task<string> GETRequest(string url, CookieContainer cookies)
+        public static async Task<string> GETRequest(string url, CookieContainer cookies, IWebProxy proxy)
         {
             string response;
             using (CookieAwareWebClient wc = new CookieAwareWebClient())
             {
+                wc.Proxy = proxy;
                 wc.Encoding = Encoding.UTF8;
                 wc.CookieContainer = cookies;
                 wc.Headers[HttpRequestHeader.UserAgent] = SteamWeb.MOBILE_APP_USER_AGENT;
@@ -23,7 +24,7 @@ namespace SteamAuth
             return response;
         }
 
-        public static async Task<string> POSTRequest(string url, CookieContainer cookies, NameValueCollection body)
+        public static async Task<string> POSTRequest(string url, CookieContainer cookies, NameValueCollection body, IWebProxy proxy)
         {
             if (body == null)
                 body = new NameValueCollection();
@@ -31,6 +32,7 @@ namespace SteamAuth
             string response;
             using (CookieAwareWebClient wc = new CookieAwareWebClient())
             {
+                wc.Proxy = proxy;
                 wc.Encoding = Encoding.UTF8;
                 wc.CookieContainer = cookies;
                 wc.Headers[HttpRequestHeader.UserAgent] = SteamWeb.MOBILE_APP_USER_AGENT;
